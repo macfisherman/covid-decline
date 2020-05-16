@@ -1,5 +1,5 @@
 {
-  "name": "covid-19",
+  "name": "decline-covid-19",
   "version": "1.0.0",
   "description": "Map of counties in the USA with declining COVID-19 numbers",
   "main": "index.js",
@@ -11,8 +11,8 @@
   "dependencies": {
     "echarts": "^4.7.0",
     "echarts-leaflet": "^1.1.0",
-    "jquery": "^3.5.0",
+    "jquery": "^3.5.1",
     "leaflet": "^1.6.0",
-    "papaparse": "^5.2.0",
+    "papaparse": "^5.2.0"
   }
 }
