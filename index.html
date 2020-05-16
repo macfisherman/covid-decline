@@ -1,0 +1,147 @@
+<html>
+<head>
+<title>Days of decline of reported cases for Covid-19</title>
+<link rel="stylesheet" href="node_modules/leaflet/dist/leaflet.css">
+<script src="node_modules/echarts/dist/echarts.js"></script>
+<script src="node_modules/leaflet/dist/leaflet.js"></script>
+<script src="node_modules/echarts-leaflet/dist/echarts-leaflet.js"></script>
+<script src="node_modules/jquery/dist/jquery.js"></script>
+<script src="node_modules/papaparse/papaparse.min.js"></script>
+</head>
+<body>
+    <style>
+    html, body, #main {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+    }
+</style>
+<div id="main"></div>
+<!--
+<div id="main" style="width: 1200px; height: 700px;"></div>
+-->
+
+<script>
+
+let stats=[];
+
+fetch('https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv').
+    then(result => result.text()).
+    then( function(data) {
+        Papa.parse(data, {
+            dynamicTyping: true,
+        	step: function(row) {
+                if(row.data[0] > 84000000) {
+                    // convert UID to USA GEOID
+                    uid = row.data[0] - 84000000;
+                    key=uid.toString().padStart(5,"0");
+                    stats.push( {name: key, value: trend(row.data.slice(11)), location: row.data[10] });
+                }
+        	},
+        	complete: function() {
+                getGeoJSON();
+        	}
+        });
+    });
+
+function trend(stats) {
+    var decline=0;
+    var last=0
+    stats.forEach(function(item) {
+        if((item - last) < 1 ) {
+            decline++;
+        } else {
+            decline=0;
+        }
+        last=item;
+    });
+
+    return decline;
+}
+
+function getGeoJSON() {
+    fetch('./county.json').
+        then( result => result.json()).
+        then( function(counties) {
+
+            var myChart = echarts.init(document.getElementById('main'));
+
+            // Specify configurations and data graphs
+            myChart.showLoading();
+            echarts.registerMap('USA', counties, {
+                    Alaska: {              // 把阿拉斯加移到美国主大陆左下方
+                        left: -131,
+                        top: 25,
+                        width: 15
+                    },
+                    Hawaii: {
+                        left: -110,        // 夏威夷
+                        top: 28,
+                        width: 5
+                    },
+                    'Puerto Rico': {       // 波多黎各
+                        left: -76,
+                        top: 26,
+                        width: 2
+                    }
+                });
+
+                option = {
+                    title : {
+                        text: 'COVID-19 Consecutive days of decline',
+                        subtext: 'Data derived from COVID-19 Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University.',
+                        sublink: 'https://github.com/CSSEGISandData/COVID-19',
+                        left: 'right'
+                    },
+                    tooltip : {
+                        trigger: 'item',
+                        showDelay: 0,
+                        transitionDuration: 0.2,
+                        formatter : function (params) {
+                            return params.seriesName + '<br/>' + params.data.location + ' : ' + params.value;
+                        }
+                    },
+                    visualMap: {
+                        left: 'right',
+                        min: 0,
+                        max: 14,
+                        color: ['green','yellow','orange','red'],
+                        text:['14 day decline','no decline'],
+                        calculable : true
+                    },
+                    toolbox: {
+                        show : true,
+                        //orient : 'vertical',
+                        left: 'left',
+                        top: 'top',
+                        feature : {
+                            mark : {show: true},
+                            dataView : {show: true, readOnly: false},
+                            restore : {show: true},
+                            saveAsImage : {show: true}
+                        }
+                    },
+                    series : [
+                        {
+                            name: 'Days in decline',
+                            type: 'map',
+                            roam: true,
+                            map: 'USA',
+                            itemStyle:{
+                                emphasis:{label:{show:true}}
+                            },
+                            textFixed : {
+                                Alaska : [20, -20]
+                            },
+                            data: stats,
+                        }
+                    ]
+                };
+                myChart.setOption(option);
+                myChart.hideLoading();
+});
+}
+
+</script>
+</body>
+</html>
