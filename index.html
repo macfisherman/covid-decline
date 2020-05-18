@@ -46,14 +46,17 @@ fetch('https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_cov
 
 function trend(stats) {
     var decline=0;
-    var last=0
-    stats.forEach(function(item) {
-        if((item - last) < 1 ) {
+    var last_count=0;
+    var last_diff=0;
+    stats.forEach(function(count) {
+        let diff = count - last_count;
+        if( diff <= last_diff ) {
             decline++;
         } else {
             decline=0;
         }
-        last=item;
+        last_diff=diff;
+        last_count=count;
     });
 
     return decline;
@@ -116,9 +119,9 @@ function getGeoJSON() {
                         top: 'top',
                         feature : {
                             mark : {show: true},
-                            dataView : {show: true, readOnly: false},
-                            restore : {show: true},
-                            saveAsImage : {show: true}
+                            //dataView : {show: true, readOnly: false},
+                            //restore : {show: true, title: 'Restore'},
+                            saveAsImage : {show: true, title: 'Save as Image'}
                         }
                     },
                     series : [
