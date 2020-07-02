@@ -65,9 +65,22 @@ function sum(arr) {
   while (len--) num += Number(arr[len]);
   return num;
 }
+    
+function delta(stats) {
+    var last = 0;
+    var res = [];
+
+    stats.forEach(function(item) {
+        res.push(item-last);
+        last = item
+    });
+
+    return res;
+}
 
 function trend(stats) {
     var ma = sma(stats, 7)
+    var deltas = delta(ma)
 
     var decline=0;
     var last=0
