@@ -84,7 +84,7 @@ function trend(stats) {
 
     var decline=0;
     var last=0
-    ma.forEach(function(item) {
+    deltas.forEach(function(item) {
         if((item - last) < 1 ) {
             decline++;
         } else {
