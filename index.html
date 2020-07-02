@@ -44,42 +44,43 @@ fetch('https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_cov
         });
     });
 
-function averageWindow(size, elements) {
-    var averages = []
-    var items = 2
+function sma(arr, range) {
+  var num = range || arr.length;
+  var res = [];
+  var len = arr.length + 1;
+  var idx = num - 1;
+  while (++idx < len) {
+    res.push(avg(arr, idx, num).toFixed(2));
+  }
+  return res;
+}
 
-    elements.reduceRight(function (acc, value) {
-        acc = acc + value
-        if (items % size == 0) {
-            averages.unshift(acc / size)
-            acc = 0
-        }
-        items++
-        return acc
-    })
+function avg(arr, idx, range) {
+  return sum(arr.slice(idx - range, idx)) / range;
+}
 
-    return averages
+function sum(arr) {
+  var len = arr.length;
+  var num = 0;
+  while (len--) num += Number(arr[len]);
+  return num;
 }
 
 function trend(stats) {
-    var w=7
-    var averages = averageWindow(w, stats);
+    var ma = sma(stats, 7)
 
     var decline=0;
-    var last_count=0;
-    var last_diff=0;
-    averages.forEach(function(count) {
-        let diff = count - last_count;
-        if( diff <= last_diff ) {
+    var last=0
+    ma.forEach(function(item) {
+        if((item - last) < 1 ) {
             decline++;
         } else {
             decline=0;
         }
-        last_diff=diff;
-        last_count=count;
+        last=item;
     });
 
-    return decline*w;
+    return decline;
 }
 
 function getGeoJSON() {
